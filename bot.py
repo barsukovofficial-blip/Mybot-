@@ -1,6 +1,6 @@
 import logging
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 from groq import Groq
 
 TELEGRAM_TOKEN = "8938270908:AAESD8HK-ThmWJkfZQwpWrh3vZ-zUKN8HYY"
@@ -13,33 +13,32 @@ logging.basicConfig(level=logging.INFO)
 groq_client = Groq(api_key=GROQ_API_KEY)
 PAID_USERS = set()
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
+def start(update, context):
+    update.message.reply_text(
         "👋 Привет! Я ИИ-помощник.\n\n"
         "💬 Задай мне любой вопрос!\n\n"
         "💳 Для получения доступа напиши: /buy"
     )
 
-async def buy(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
+def buy(update, context):
+    update.message.reply_text(
         f"💳 Для получения доступа:\n\n"
         f"Переведи {PRICE}₸ на Kaspi: {KASPI_NUMBER}\n"
         f"В комментарии укажи свой Telegram ID:\n\n"
-        f"Твой ID: `{update.effective_user.id}`\n\n"
-        "После оплаты напиши администратору.",
-        parse_mode="Markdown"
+        f"Твой ID: {update.effective_user.id}\n\n"
+        "После оплаты напиши администратору."
     )
 
-async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def handle_message(update, context):
     user_id = update.effective_user.id
     if user_id not in PAID_USERS and user_id != ADMIN_ID:
-        await update.message.reply_text(
+        update.message.reply_text(
             f"❌ У тебя нет доступа.\n\nНапиши /buy чтобы получить доступ за {PRICE}₸"
         )
         return
 
     user_text = update.message.text
-    await update.message.reply_text("⏳ Думаю...")
+    update.message.reply_text("⏳ Думаю...")
 
     try:
         response = groq_client.chat.completions.create(
@@ -50,27 +49,32 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             ]
         )
         answer = response.choices[0].message.content
-        await update.message.reply_text(answer)
+        update.message.reply_text(answer)
     except Exception as e:
-        await update.message.reply_text("❌ Ошибка, попробуй снова.")
+        update.message.reply_text("❌ Ошибка, попробуй снова.")
         logging.error(f"Groq error: {e}")
 
-async def add_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def add_user(update, context):
     if update.effective_user.id != ADMIN_ID:
-        await update.message.reply_text("❌ Нет доступа")
+        update.message.reply_text("❌ Нет доступа")
         return
     if context.args:
         new_user_id = int(context.args[0])
         PAID_USERS.add(new_user_id)
-        await update.message.reply_text(f"✅ Пользователь {new_user_id} добавлен!")
+        update.message.reply_text(f"✅ Пользователь {new_user_id} добавлен!")
     else:
-        await update.message.reply_text("Используй: /adduser 123456789")
+        update.message.reply_text("Используй: /adduser 123456789")
+
+def main():
+    updater = Updater(TELEGRAM_TOKEN)
+    dp = updater.dispatcher
+    dp.add_handler(CommandHandler("start", start))
+    dp.add_handler(CommandHandler("buy", buy))
+    dp.add_handler(CommandHandler("adduser", add_user))
+    dp.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_message))
+    updater.start_polling()
+    print("Бот запущен!")
+    updater.idle()
 
 if __name__ == "__main__":
-    app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("buy", buy))
-    app.add_handler(CommandHandler("adduser", add_user))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-    print("Бот запущен!")
-    app.run_polling()
+    main()
