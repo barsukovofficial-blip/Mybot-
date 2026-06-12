@@ -5,7 +5,7 @@ import time
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 TELEGRAM_TOKEN = "8938270908:AAGaV0FU83A51OFpKfRqyzmW38KriB2QH_c"
-GROQ_API_KEY = "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"
+GROQ_API_KEY = "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"
 KASPI_NUMBER = "+77778785544"
 PRICE = "500"
 ADMIN_ID = 7519716543
