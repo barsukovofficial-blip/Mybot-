@@ -3,7 +3,7 @@ from groq import Groq
 import threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
-TELEGRAM_TOKEN = "8938270908:AAHJLqAHglOOHE5Xzg6jacAZV4C44jYk-cM"
+TELEGRAM_TOKEN = "8938270908:AAHa5vuFhaaPbEoavPA9Yz84Gn57yQHcwUs"
 GROQ_API_KEY = "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"
 KASPI_NUMBER = "+77778785544"
 PRICE = "500"
