@@ -1,15 +1,16 @@
 import telebot
 from groq import Groq
 import threading
+import time
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
-TELEGRAM_TOKEN = "8938270908:AAHa5vuFhaaPbEoavPA9Yz84Gn57yQHcwUs"
-GROQ_API_KEY = "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"
+TELEGRAM_TOKEN = "8938270908:AAGaV0FU83A51OFpKfRqyzmW38KriB2QH_c"
+GROQ_API_KEY = "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"
 KASPI_NUMBER = "+77778785544"
 PRICE = "500"
 ADMIN_ID = 7519716543
 
-bot = telebot.TeleBot(TELEGRAM_TOKEN)
+bot = telebot.TeleBot(TELEGRAM_TOKEN, threaded=False)
 groq_client = Groq(api_key=GROQ_API_KEY)
 PAID_USERS = set()
 
@@ -79,4 +80,10 @@ def handle_message(message):
 
 threading.Thread(target=run_server, daemon=True).start()
 print("Бот запущен!")
-bot.infinity_polling()
+
+while True:
+    try:
+        bot.polling(none_stop=True, timeout=60)
+    except Exception as e:
+        print(f"Ошибка: {e}")
+        time.sleep(5)
