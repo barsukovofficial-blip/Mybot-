@@ -64,3 +64,4 @@ def handle_message(message):
         bot.reply_to(message, "❌ Ошибка, попробуй снова.")
 
 print("Бот запущен!")
+bot.infinity_polling()
