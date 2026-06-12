@@ -1,18 +1,28 @@
 import telebot
-from groq import Groq
 import threading
 import time
+import requests
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 TELEGRAM_TOKEN = "8938270908:AAGaV0FU83A51OFpKfRqyzmW38KriB2QH_c"
-GROQ_API_KEY = "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"
+GEMINI_API_KEY = "AQ.Ab8RN6IyKsZ_5AIQWRtX19moIvnqZY3apYez1l3Q2kNeW3oc9A"
 KASPI_NUMBER = "+77778785544"
 PRICE = "500"
 ADMIN_ID = 7519716543
 
 bot = telebot.TeleBot(TELEGRAM_TOKEN, threaded=False)
-groq_client = Groq(api_key=GROQ_API_KEY)
 PAID_USERS = set()
+
+def ask_gemini(text):
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
+    data = {
+        "contents": [
+            {"parts": [{"text": f"Ты полезный ИИ-помощник. Отвечай на русском языке.\n\nВопрос: {text}"}]}
+        ]
+    }
+    response = requests.post(url, json=data)
+    result = response.json()
+    return result["candidates"][0]["content"]["parts"][0]["text"]
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -66,17 +76,11 @@ def handle_message(message):
 
     bot.reply_to(message, "⏳ Думаю...")
     try:
-        response = groq_client.chat.completions.create(
-            model="llama3-8b-8192",
-            messages=[
-                {"role": "system", "content": "Ты полезный ИИ-помощник. Отвечай на русском языке."},
-                {"role": "user", "content": message.text}
-            ]
-        )
-        answer = response.choices[0].message.content
+        answer = ask_gemini(message.text)
         bot.reply_to(message, answer)
     except Exception as e:
         bot.reply_to(message, "❌ Ошибка, попробуй снова.")
+        print(f"Gemini error: {e}")
 
 threading.Thread(target=run_server, daemon=True).start()
 print("Бот запущен!")
