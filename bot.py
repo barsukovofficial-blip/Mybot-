@@ -1,7 +1,7 @@
 import telebot
 from groq import Groq
 
-TELEGRAM_TOKEN = "8938270908:AAESD8HK-ThmWJkfZQwpWrh3vZ-zUKN8HYY"
+TELEGRAM_TOKEN = "8938270908:AAHqak_ZWdsscboPGWrtyDUSb7yq56XjWFQ"
 GROQ_API_KEY = "gsk_sPG3w6I5LY6kwUj-HV1i2WGdyb3FYXw27gTBn278mJwga-T20Zngx8"
 KASPI_NUMBER = "+77778785544"
 PRICE = "500"
@@ -64,5 +64,3 @@ def handle_message(message):
         bot.reply_to(message, "❌ Ошибка, попробуй снова.")
 
 print("Бот запущен!")
-bot.polling(none_stop=True)
-
