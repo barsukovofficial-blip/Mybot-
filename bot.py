@@ -1,5 +1,7 @@
 import telebot
 from groq import Groq
+import threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
 
 TELEGRAM_TOKEN = "8938270908:AAHJLqAHglOOHE5Xzg6jacAZV4C44jYk-cM"
 GROQ_API_KEY = "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"
@@ -10,6 +12,18 @@ ADMIN_ID = 7519716543
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 groq_client = Groq(api_key=GROQ_API_KEY)
 PAID_USERS = set()
+
+class Handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b"Bot is running!")
+    def log_message(self, *args):
+        pass
+
+def run_server():
+    server = HTTPServer(("0.0.0.0", 10000), Handler)
+    server.serve_forever()
 
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -63,5 +77,6 @@ def handle_message(message):
     except Exception as e:
         bot.reply_to(message, "❌ Ошибка, попробуй снова.")
 
+threading.Thread(target=run_server, daemon=True).start()
 print("Бот запущен!")
 bot.infinity_polling()
